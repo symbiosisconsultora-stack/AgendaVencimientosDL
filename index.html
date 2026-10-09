@@ -489,6 +489,10 @@ select option{background:var(--surface2);}
   border:1px solid var(--border);border-radius:20px;
   font-size:11px;color:var(--text2);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis;
 }
+
+/* ms selected item highlight */
+.ms-item.selected{background:rgba(79,127,255,0.10);color:var(--accent2);}
+.ms-item.selected input[type=checkbox]{accent-color:var(--accent);}
 </style>
 </head>
 <body>
@@ -1487,12 +1491,39 @@ function msToggle(pg,key,val,ev){
   const arr=PF[pg][key];
   const i=arr.indexOf(val);
   if(i>=0)arr.splice(i,1);else arr.push(val);
-  buildPivotToolbar(pg);renderPivot(pg);
+  // Actualizar label y checkboxes sin reconstruir el toolbar
+  _msRefreshUI(pg,key);
+  renderPivot(pg);
 }
 function msToggleAll(pg,key,ev){
   if(ev)ev.stopPropagation();
   PF[pg][key]=[];
-  buildPivotToolbar(pg);renderPivot(pg);
+  _msRefreshUI(pg,key);
+  renderPivot(pg);
+}
+function _msRefreshUI(pg,key){
+  const id=`ms-${pg}-${key}`;
+  const el=document.getElementById(id);
+  if(!el)return;
+  const sel=PF[pg][key];
+  // Actualizar label del trigger
+  const lbl=sel.length===0?'Todos':(sel.length===1?sel[0]:`${sel.length} seleccionados`);
+  const lblEl=el.querySelector('.ms-lbl');
+  if(lblEl)lblEl.textContent=lbl;
+  // Actualizar checkbox "Todos"
+  const allCb=el.querySelector('.ms-item.all input[type=checkbox]');
+  if(allCb)allCb.checked=(sel.length===0);
+  // Actualizar checkboxes individuales
+  el.querySelectorAll('.ms-item:not(.all)').forEach(item=>{
+    const span=item.querySelector('span');
+    if(!span)return;
+    const v=span.textContent;
+    const cb=item.querySelector('input[type=checkbox]');
+    if(cb)cb.checked=sel.includes(v);
+    // Marcar visualmente el ítem activo
+    item.style.background=sel.includes(v)?'rgba(79,127,255,0.12)':'';
+    item.style.color=sel.includes(v)?'var(--accent2)':'';
+  });
 }
 
 // ══════════════════════════════════════════════
