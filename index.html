@@ -1257,8 +1257,8 @@ function renderVenc(){
         `<span class="pill p-cyan">${escapeHtml(r.origen)}</span>`:
         `<span style="color:var(--text3);font-style:italic;font-size:11.5px;">—</span>`;
       const togBtn = r.estado==='pagado'?
-        `<button class="act-btn" onclick="togglePago(${r.id})" title="Marcar impago">↩</button>`:
-        `<button class="act-btn ok" onclick="togglePago(${r.id})" title="Marcar pagado">✓</button>`;
+        `<button class="act-btn" onclick="togglePago('${r.id}')" title="Marcar impago">↩</button>`:
+        `<button class="act-btn ok" onclick="togglePago('${r.id}')" title="Marcar pagado">✓</button>`;
       return `<tr class="${rowCls}">
         <td class="td-date">${fd(r.fecha)}${dlHtml}</td>
         <td class="td-concepto">${escapeHtml(r.concepto)}</td>
@@ -1269,8 +1269,8 @@ function renderVenc(){
         <td class="ctr">${estadoPill}</td>
         <td class="ctr">
           ${togBtn}
-          <button class="act-btn" onclick="openModalEdit(${r.id})">✎</button>
-          <button class="act-btn danger" onclick="deleteRecordId(${r.id})">🗑</button>
+          <button class="act-btn" onclick="openModalEdit('${r.id}')">✎</button>
+          <button class="act-btn danger" onclick="deleteRecordId('${r.id}')">🗑</button>
         </td>
       </tr>`;
     }).join('');
@@ -1303,8 +1303,8 @@ function renderVenc(){
       const rubroHtml = r.rubro?`<span class="pill p-blue">${escapeHtml(r.rubro)}</span>`:'';
       const origenHtml = r.origen?`<span class="pill p-cyan">${escapeHtml(r.origen)}</span>`:'';
       const togBtn = r.estado==='pagado'?
-        `<button class="act-btn" onclick="togglePago(${r.id})" title="Marcar impago">↩</button>`:
-        `<button class="act-btn ok" onclick="togglePago(${r.id})" title="Marcar pagado">✓</button>`;
+        `<button class="act-btn" onclick="togglePago('${r.id}')" title="Marcar impago">↩</button>`:
+        `<button class="act-btn ok" onclick="togglePago('${r.id}')" title="Marcar pagado">✓</button>`;
       return `<div class="${cardCls}">
         <div class="rc-top">
           <div class="rc-concepto">${escapeHtml(r.concepto)}</div>
@@ -1317,8 +1317,8 @@ function renderVenc(){
         ${r.obs?`<div style="font-size:11.5px;color:var(--text3);font-style:italic;">${escapeHtml(r.obs)}</div>`:''}
         <div class="rc-actions">
           ${togBtn}
-          <button class="act-btn" onclick="openModalEdit(${r.id})">✎ Editar</button>
-          <button class="act-btn danger" onclick="deleteRecordId(${r.id})">🗑</button>
+          <button class="act-btn" onclick="openModalEdit('${r.id}')">✎ Editar</button>
+          <button class="act-btn danger" onclick="deleteRecordId('${r.id}')">🗑</button>
         </div>
       </div>`;
     }).join('');
@@ -1333,17 +1333,26 @@ function renderVenc(){
   document.getElementById('tot-pag').textContent=fa(rows.filter(r=>r.estado==='pagado').reduce((s,r)=>s+(Number(r.importe)||0),0),'$0');
 }
 
-function togglePago(id){
+async function togglePago(id){
   const r=ST.records.find(x=>x.id===id);
   if(!r)return;
-  if(r.estado==='pagado'){r.estado='impago';r.fechaPago='';}
-  else{r.estado='pagado';r.fechaPago=today();}
-  save();renderVenc();
+  const nuevoEstado = r.estado==='pagado' ? 'impago' : 'pagado';
+  const nuevaFP = nuevoEstado==='pagado' ? today() : null;
+  const { error } = await supa.from('pagos').update({
+    estado: nuevoEstado,
+    fecha_pago: nuevaFP
+  }).eq('id', id);
+  if(error){ alert('Error: '+error.message); return; }
+  r.estado = nuevoEstado;
+  r.fechaPago = nuevaFP || '';
+  renderVenc();
 }
-function deleteRecordId(id){
+async function deleteRecordId(id){
   if(!confirm('¿Eliminar este vencimiento?'))return;
+  const { error } = await supa.from('pagos').delete().eq('id', id);
+  if(error){ alert('Error al eliminar: '+error.message); return; }
   ST.records=ST.records.filter(r=>r.id!==id);
-  save();renderVenc();
+  renderVenc();
 }
 
 // ══════════════════════════════════════════════
@@ -1471,7 +1480,7 @@ function buildMS(pg,key,arr){
       </div>`;
   arr.forEach(v=>{
     const checked=sel.includes(v);
-    html+=`<div class="ms-item" onclick="msToggle('${pg}','${key}','${escapeHtml(v).replace(/'/g,"\\'")}',event)">
+    html+=`<div class="ms-item${checked?' selected':''}" onclick="msToggle('${pg}','${key}','${escapeHtml(v).replace(/'/g,"\\'")}',event)">
       <input type="checkbox" ${checked?'checked':''} onclick="event.stopPropagation();">
       <span>${escapeHtml(v)}</span>
     </div>`;
@@ -1521,8 +1530,9 @@ function _msRefreshUI(pg,key){
     const cb=item.querySelector('input[type=checkbox]');
     if(cb)cb.checked=sel.includes(v);
     // Marcar visualmente el ítem activo
-    item.style.background=sel.includes(v)?'rgba(79,127,255,0.12)':'';
-    item.style.color=sel.includes(v)?'var(--accent2)':'';
+    item.classList.toggle('selected', sel.includes(v));
+    item.style.background='';
+    item.style.color='';
   });
 }
 
@@ -1696,7 +1706,7 @@ function showPopup(pg,rubro,key,seg){
     <td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;">${r.importe===''||r.importe==null?'<span style="color:var(--text3)">—</span>':fa(r.importe)}</td>
     <td style="padding:8px 10px;">${r.medio?`<span class="pill ${medioPillCls(r.medio)}">${escapeHtml(r.medio)}</span>`:''}</td>
     <td style="padding:8px 10px;text-align:center;">
-      <button class="act-btn" onclick="closePopup();openModalEdit(${r.id})" title="Editar">✎</button>
+      <button class="act-btn" onclick="closePopup();openModalEdit('${r.id}')" title="Editar">✎</button>
     </td>
   </tr>`).join('');
 
