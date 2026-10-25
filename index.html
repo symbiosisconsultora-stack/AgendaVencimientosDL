@@ -493,6 +493,40 @@ select option{background:var(--surface2);}
 /* ms selected item highlight */
 .ms-item.selected{background:rgba(79,127,255,0.10);color:var(--accent2);}
 .ms-item.selected input[type=checkbox]{accent-color:var(--accent);}
+
+/* ── PROVEEDORES ── */
+.prov-subtabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:10px;flex-wrap:wrap;}
+.prov-subtab{padding:6px 14px;border-radius:7px;border:1px solid transparent;background:none;color:var(--text2);font-size:13px;font-weight:500;cursor:pointer;transition:all .13s;font-family:'DM Sans',sans-serif;}
+.prov-subtab:hover{background:var(--surface3);color:var(--text);}
+.prov-subtab.active{background:var(--accent-glow);color:var(--accent2);border-color:rgba(79,127,255,0.28);}
+.pst{display:none;}
+.pst.active{display:block;}
+.prov-import-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;}
+.prov-table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px;}
+.prov-table th{background:var(--surface2);color:var(--text2);font-weight:600;padding:7px 10px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+.prov-table td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.prov-table tr:hover td{background:var(--surface2);}
+.prov-table .num{text-align:right;font-family:'DM Mono',monospace;}
+.prov-table .monto-pos{color:var(--text);}
+.prov-table .monto-zero{color:var(--text3);}
+.prov-row-header td{background:var(--surface2) !important;font-weight:600;color:var(--text);font-size:13px;}
+.prov-tag-fac{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(79,127,255,0.15);color:var(--accent2);}
+.prov-tag-rem{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(245,196,48,0.15);color:var(--yellow);}
+.prov-tag-np{display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(255,80,80,0.15);color:var(--red);}
+.prov-warn{background:rgba(255,80,80,0.08);border:1px solid rgba(255,80,80,0.25);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12.5px;color:var(--red);}
+.prov-warn strong{display:block;margin-bottom:4px;}
+.prov-propose-row{background:rgba(79,127,255,0.06);}
+.prov-propose-row td{border-bottom:1px solid rgba(79,127,255,0.12);}
+.prov-venc-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;}
+.prov-venc-block-title{font-weight:700;font-size:13.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.prov-acuerdo-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
+.prov-acuerdo-row:last-child{border-bottom:none;}
+.prov-acuerdo-prov{font-weight:600;min-width:180px;}
+.prov-acuerdo-desc{color:var(--text2);font-size:12px;flex:1;}
+.prov-acuerdo-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;}
+.prov-acuerdo-del:hover{color:var(--red);background:var(--red-bg);}
+.prov-input-edit{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 8px;font-size:12px;font-family:'DM Sans',sans-serif;width:100%;}
+.prov-venc-btn-group{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
@@ -540,6 +574,7 @@ select option{background:var(--surface2);}
     <div class="nav-tab" data-page="page-masiva" onclick="switchTab(this)">🗂️ Carga Masiva</div>
     <div class="nav-tab" data-page="page-proy" onclick="switchTab(this)">📅 Proyección <span class="badge" id="bdg-proy">0</span></div>
     <div class="nav-tab" data-page="page-hist" onclick="switchTab(this)">✅ Histórico <span class="badge" id="bdg-hist">0</span></div>
+    <div class="nav-tab" data-page="page-prov" onclick="switchTab(this)">🏭 Proveedores</div>
     <div class="nav-tab" data-page="page-config" onclick="switchTab(this)">⚙️ Config</div>
   </nav>
   <span class="user-chip" id="user-chip" style="display:none"></span>
@@ -559,6 +594,9 @@ select option{background:var(--surface2);}
   </button>
   <button class="bottom-nav-item" data-page="page-hist" onclick="switchTabMobile(this)">
     <span class="bn-icon">✅</span><span class="bn-label">Histór.</span>
+  </button>
+  <button class="bottom-nav-item" data-page="page-prov" onclick="switchTabMobile(this)">
+    <span class="bn-icon">🏭</span><span class="bn-label">Proveed.</span>
   </button>
   <button class="bottom-nav-item" data-page="page-config" onclick="switchTabMobile(this)">
     <span class="bn-icon">⚙️</span><span class="bn-label">Config</span>
@@ -693,6 +731,70 @@ select option{background:var(--surface2);}
 </div>
 
 <!-- ═══ PAGE: CONFIG ═══ -->
+<div id="page-prov" class="page">
+  <div class="page-title">Proveedores</div>
+  <!-- Sub-tabs -->
+  <div class="prov-subtabs">
+    <button class="prov-subtab active" data-pst="pst-import" onclick="switchProvTab(this)">📥 Importar Mayor</button>
+    <button class="prov-subtab" data-pst="pst-venc" onclick="switchProvTab(this)">📋 Vencimientos Propuestos</button>
+    <button class="prov-subtab" data-pst="pst-acuerdos" onclick="switchProvTab(this)">⚙️ Acuerdos de Pago</button>
+  </div>
+
+  <!-- SUB-TAB: IMPORTAR -->
+  <div id="pst-import" class="pst active">
+    <div class="prov-import-card">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div>
+          <div style="font-weight:600;font-size:14px;margin-bottom:4px;">Mayor de Proveedores</div>
+          <div style="color:var(--text2);font-size:12.5px;">Subí el mayor exportado del sistema contable (Excel .xlsx). La app calculará el saldo en FAC y en Remitos por proveedor y propondrá las fechas de vencimiento según los acuerdos configurados.</div>
+        </div>
+        <label class="btn btn-primary" style="cursor:pointer;white-space:nowrap;">
+          📂 Cargar archivo
+          <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importarMayor(this)">
+        </label>
+      </div>
+      <div id="prov-import-result" style="margin-top:14px;"></div>
+    </div>
+  </div>
+
+  <!-- SUB-TAB: VENCIMIENTOS PROPUESTOS -->
+  <div id="pst-venc" class="pst">
+    <div id="prov-venc-wrap">
+      <div class="empty-state"><div class="ico">📥</div>Importá el mayor primero para ver los vencimientos propuestos.</div>
+    </div>
+  </div>
+
+  <!-- SUB-TAB: ACUERDOS DE PAGO -->
+  <div id="pst-acuerdos" class="pst">
+    <div class="prov-import-card" style="margin-bottom:12px;">
+      <div style="font-weight:600;font-size:14px;margin-bottom:6px;">Acuerdos por Proveedor</div>
+      <div style="color:var(--text2);font-size:12.5px;margin-bottom:12px;">Definí cómo se calcula el vencimiento para cada proveedor y modalidad (FAC = Factura, REM = Remito/Minuta Egreso, ÚNICO = aplica a ambos).</div>
+      <div id="prov-acuerdos-list"></div>
+      <div style="margin-top:14px;">
+        <div style="font-weight:600;font-size:13px;margin-bottom:8px;">+ Nuevo acuerdo</div>
+        <div class="form-grid" style="gap:8px;">
+          <div class="form-field"><label>Proveedor</label><input type="text" id="na-prov" placeholder="Nombre exacto del proveedor..."></div>
+          <div class="form-field"><label>Modalidad</label>
+            <select id="na-mod">
+              <option value="UNICO">ÚNICO (FAC y REM)</option>
+              <option value="FAC">FAC (Facturas)</option>
+              <option value="REM">REM (Remitos)</option>
+            </select>
+          </div>
+          <div class="form-field"><label>Días desde comprobante</label><input type="number" id="na-dias" min="0" max="365" value="7" placeholder="0 = en el momento"></div>
+          <div class="form-field"><label>Descripción</label><input type="text" id="na-label" placeholder="Ej: A 7 días de factura"></div>
+          <div class="form-field full" style="display:flex;align-items:center;gap:8px;padding-top:4px;">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;">
+              <input type="checkbox" id="na-viajante"> Pago al viajante (se agrupa por visita)
+            </label>
+            <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="addAcuerdo()">+ Agregar acuerdo</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="page-config" class="page">
   <div class="page-title">Configuración</div>
   <div class="config-grid">
@@ -929,7 +1031,31 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════
 const SK='flujopagos_lucas_v1', LK='flujopagos_lucas_logo_v1';
 const DM=['EFECTIVO','BANCO','BANCO PERSONAL','CHEQUE','TRANSFERENCIA','DEBIN','DÉBITO AUTOMÁTICO','MERCADO PAGO','VEP'];
-const DR=['IMPUESTOS','SERVICIOS','ADMINISTRATIVO'];
+const DR=['IMPUESTOS','SERVICIOS','ADMINISTRATIVO','PROVEEDORES'];
+
+// ── ACUERDOS DE PAGO PROVEEDORES ──
+// modalidad: 'FAC' | 'REM' | 'UNICO'
+// tipo: 'dias' (días corridos desde fecha comprobante)
+//        'semanas' (semanas corridas)
+//        'quincena' (siguiente visita viajante ~15 días)
+// diasBase: número de días/semanas
+// viajante: true → se agrupa para entrega al viajante (no cambia el cálculo)
+const DEFAULT_ACUERDOS = [
+  {proveedor:'PALADINI S. A.',       modalidad:'UNICO', tipo:'quincena', diasBase:14, viajante:true,  label:'Cada 2 semanas viajante'},
+  {proveedor:'FOX',                   modalidad:'FAC',   tipo:'dias',     diasBase:1,  viajante:false, label:'Al día siguiente de factura'},
+  {proveedor:'FOX',                   modalidad:'REM',   tipo:'quincena', diasBase:14, viajante:true,  label:'Cada 2 semanas viajante'},
+  {proveedor:'DON YEYO S.A.',         modalidad:'FAC',   tipo:'semanas',  diasBase:7,  viajante:false, label:'A la semana siguiente'},
+  {proveedor:'DON YEYO S.A.',         modalidad:'REM',   tipo:'dias',     diasBase:0,  viajante:false, label:'En el momento de entrega'},
+  {proveedor:'TREGAR',                modalidad:'FAC',   tipo:'dias',     diasBase:14, viajante:false, label:'A 14 días de factura'},
+  {proveedor:'NOAL S.A.',             modalidad:'FAC',   tipo:'dias',     diasBase:7,  viajante:false, label:'A 7 días'},
+  {proveedor:'NOAL S.A.',             modalidad:'REM',   tipo:'quincena', diasBase:21, viajante:true,  label:'Cada 3 semanas viajante'},
+  {proveedor:'TONADITA',              modalidad:'FAC',   tipo:'dias',     diasBase:7,  viajante:false, label:'A 7 días'},
+  {proveedor:'TONADITA',              modalidad:'REM',   tipo:'quincena', diasBase:21, viajante:true,  label:'Cada 3 semanas viajante'},
+  {proveedor:'COMERCIAL RIGGIO S.A.', modalidad:'UNICO', tipo:'dias',     diasBase:7,  viajante:false, label:'A 7 días'},
+  {proveedor:'SIMPLOT',               modalidad:'UNICO', tipo:'dias',     diasBase:21, viajante:false, label:'A 21 días'},
+  {proveedor:'LÁCTEOS AURORA S.R.L.', modalidad:'UNICO', tipo:'dias',     diasBase:14, viajante:false, label:'A 14 días'},
+  {proveedor:'LIEG-LAC',              modalidad:'REM',   tipo:'semanas',  diasBase:7,  viajante:false, label:'A la semana siguiente del remito'},
+];
 const DO=['DISTRIBUIDORA LUCAS'];
 const MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const MESES_LARGO=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -980,7 +1106,9 @@ let ST={
   year:new Date().getFullYear(),
   openRubros:{},
   sortBy:'fecha',
-  sortDir:'asc'
+  sortDir:'asc',
+  acuerdos:[...DEFAULT_ACUERDOS],
+  provImport:null   // resultado de la última importación de mayor
 };
 
 // pivot filter state
@@ -1133,6 +1261,7 @@ function refreshPage(p){
   if(p==='page-proy'){buildPivotToolbar('proy');renderPivot('proy');}
   if(p==='page-hist'){buildPivotToolbar('hist');renderPivot('hist');}
   if(p==='page-config')renderConfig();
+  if(p==='page-prov')renderProvAcuerdos();
 }
 
 // ══════════════════════════════════════════════
@@ -2293,6 +2422,355 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('login-screen').style.display = 'flex';
   }
 });
+
+// ══════════════════════════════════════════════
+//  MÓDULO PROVEEDORES
+// ══════════════════════════════════════════════
+
+function switchProvTab(el){
+  document.querySelectorAll('.prov-subtab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.pst').forEach(p=>p.classList.remove('active'));
+  document.getElementById(el.dataset.pst).classList.add('active');
+  if(el.dataset.pst==='pst-acuerdos') renderProvAcuerdos();
+  if(el.dataset.pst==='pst-venc') renderProvVencimientosPropuestos();
+}
+
+// ── Acuerdos CRUD ──
+function renderProvAcuerdos(){
+  const el=document.getElementById('prov-acuerdos-list');
+  if(!el)return;
+  if(ST.acuerdos.length===0){
+    el.innerHTML='<div style="color:var(--text3);font-size:12.5px;padding:8px 0;">Sin acuerdos configurados.</div>';
+    return;
+  }
+  // Agrupar por proveedor
+  const byProv={};
+  ST.acuerdos.forEach((a,i)=>{
+    if(!byProv[a.proveedor])byProv[a.proveedor]=[];
+    byProv[a.proveedor].push({...a,_idx:i});
+  });
+  let html='';
+  Object.keys(byProv).sort().forEach(prov=>{
+    byProv[prov].forEach(a=>{
+      const modTag=a.modalidad==='FAC'?`<span class="prov-tag-fac">FAC</span>`:
+                   a.modalidad==='REM'?`<span class="prov-tag-rem">REM</span>`:
+                   `<span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(41,201,122,0.15);color:var(--green);">ÚNICO</span>`;
+      const viaj=a.viajante?'<span style="font-size:10px;color:var(--text3);margin-left:4px;">🤝 viajante</span>':'';
+      html+=`<div class="prov-acuerdo-row">
+        <div class="prov-acuerdo-prov">${escapeHtml(prov)}</div>
+        ${modTag}
+        <div class="prov-acuerdo-desc">${escapeHtml(a.label||'')} (${a.diasBase} días)${viaj}</div>
+        <button class="prov-acuerdo-del" onclick="deleteAcuerdo(${a._idx})" title="Eliminar">✕</button>
+      </div>`;
+    });
+  });
+  el.innerHTML=html;
+}
+
+function addAcuerdo(){
+  const prov=(document.getElementById('na-prov').value||'').trim().toUpperCase();
+  const mod=document.getElementById('na-mod').value;
+  const dias=parseInt(document.getElementById('na-dias').value)||0;
+  const label=(document.getElementById('na-label').value||'').trim();
+  const viajante=document.getElementById('na-viajante').checked;
+  if(!prov){alert('Ingresá el nombre del proveedor.');return;}
+  ST.acuerdos.push({proveedor:prov, modalidad:mod, tipo:'dias', diasBase:dias, viajante, label:label||`A ${dias} días`});
+  document.getElementById('na-prov').value='';
+  document.getElementById('na-label').value='';
+  document.getElementById('na-dias').value='7';
+  document.getElementById('na-viajante').checked=false;
+  renderProvAcuerdos();
+}
+
+function deleteAcuerdo(idx){
+  if(!confirm('¿Eliminar este acuerdo?'))return;
+  ST.acuerdos.splice(idx,1);
+  renderProvAcuerdos();
+}
+
+// ── Importación del Mayor ──
+function addDias(fechaStr, dias){
+  if(dias===0)return fechaStr; // en el momento
+  const d=new Date(fechaStr+'T00:00:00');
+  d.setDate(d.getDate()+dias);
+  return d.toISOString().split('T')[0];
+}
+
+function nextWeekday1(fechaStr){
+  // Devuelve el lunes de la próxima semana
+  const d=new Date(fechaStr+'T00:00:00');
+  const dow=d.getDay(); // 0=Dom, 1=Lun...
+  const diff=dow===0?1:(8-dow); // días hasta el próximo lunes
+  d.setDate(d.getDate()+diff);
+  return d.toISOString().split('T')[0];
+}
+
+function calcVencimiento(fechaComp, acuerdo){
+  if(!acuerdo)return null;
+  if(acuerdo.tipo==='semanas'||acuerdo.tipo==='quincena'){
+    return addDias(fechaComp, acuerdo.diasBase);
+  }
+  return addDias(fechaComp, acuerdo.diasBase);
+}
+
+function getAcuerdo(proveedorNombre, modalidad){
+  const pn=proveedorNombre.toUpperCase();
+  // Buscar exacto
+  let a=ST.acuerdos.find(x=>x.proveedor.toUpperCase()===pn && (x.modalidad===modalidad||x.modalidad==='UNICO'));
+  return a||null;
+}
+
+async function importarMayor(input){
+  const file=input.files[0];
+  if(!file)return;
+  const resEl=document.getElementById('prov-import-result');
+  resEl.innerHTML='<div style="color:var(--text2);font-size:12.5px;">⏳ Procesando...</div>';
+
+  try{
+    const data=await file.arrayBuffer();
+    const wb=XLSX.read(data,{type:'array',cellDates:true});
+    const ws=wb.Sheets[wb.SheetNames[0]];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+
+    // Detectar header
+    const HDR=rows[0]||[];
+    const iF=HDR.findIndex(h=>String(h).toLowerCase().includes('fecha')&&String(h).toLowerCase().includes('imputa'));
+    const iP=HDR.findIndex(h=>String(h).toLowerCase().includes('nombre'));
+    const iC=HDR.findIndex(h=>String(h).toLowerCase().includes('comprob'));
+    const iN=HDR.findIndex(h=>String(h).toLowerCase().includes('numera'));
+    const iD=HDR.findIndex(h=>String(h).toLowerCase().includes('debe'));
+    const iH=HDR.findIndex(h=>String(h).toLowerCase().includes('haber'));
+
+    // Fallback por posición (Fecha, Imputacion, Empresa, Sucursal, Código, Nombre, Comprobante, Numeración, Moneda, Cotización, Debe, Haber, Saldo)
+    const colFecha  = iF>=0?iF:1;
+    const colNombre = iP>=0?iP:5;
+    const colComp   = iC>=0?iC:6;
+    const colNum    = iN>=0?iN:7;
+    const colDebe   = iD>=0?iD:10;
+    const colHaber  = iH>=0?iH:11;
+
+    // Estructura por proveedor
+    const provData={};
+    function ensureProv(n){if(!provData[n])provData[n]={fac:[],rem:[],op:[],nc:[]};return provData[n];}
+
+    for(let i=1;i<rows.length;i++){
+      const row=rows[i];
+      const nombre=(row[colNombre]||'').trim();
+      if(!nombre||nombre==='TODOS LOS PROVEEDORES'||nombre==='MOVIMIENTOS S/CPBTE.FISCAL')continue;
+      const comp=(row[colComp]||'').trim().toUpperCase();
+      const num =(row[colNum] ||'').trim();
+      const debe=parseFloat(String(row[colDebe]||'0').replace(',','.').replace(/[^0-9.-]/g,''))||0;
+      const haber=parseFloat(String(row[colHaber]||'0').replace(',','.').replace(/[^0-9.-]/g,''))||0;
+      // Fecha: puede venir como string o Date
+      let fecha=row[colFecha]||'';
+      if(fecha instanceof Date){
+        fecha=fecha.toISOString().split('T')[0];
+      } else {
+        // Formato dd/mm/yyyy o yyyy-mm-dd
+        fecha=String(fecha).trim();
+        if(/^\d{2}\/\d{2}\/\d{4}$/.test(fecha)){
+          const[dd,mm,yyyy]=fecha.split('/');
+          fecha=`${yyyy}-${mm}-${dd}`;
+        } else if(/^\d{4}-\d{2}-\d{2}/.test(fecha)){
+          fecha=fecha.substring(0,10);
+        }
+      }
+      const pd=ensureProv(nombre);
+      if(comp==='FACTURA')          pd.fac.push({fecha,num,debe,haber});
+      else if(comp==='MINUTA EGRESO') pd.rem.push({fecha,num,debe,haber});
+      else if(comp==='MINUTA INGRESO')pd.rem.push({fecha,num,debe:haber,haber:debe}); // invierte para restar
+      else if(comp==='NOTA DE CREDITO'||comp==='N.C. DEVOLUCION') pd.nc.push({fecha,num,debe,haber});
+      else if(comp==='ORDEN DE PAGO') pd.op.push({fecha,num,debe,haber});
+    }
+
+    // Calcular saldos
+    const resultado=[];
+    const sinAcuerdo=[];
+    const provNames=Object.keys(provData).filter(p=>!['TODOS LOS PROVEEDORES','MOVIMIENTOS S/CPBTE.FISCAL'].includes(p));
+
+    provNames.forEach(prov=>{
+      const pd=provData[prov];
+      // Saldo FAC = sum(haber facturas) - sum(debe NC) - sum(debe OP)
+      const totalFacHaber = pd.fac.reduce((s,r)=>s+r.haber,0);
+      const totalNC       = pd.nc.reduce((s,r)=>s+r.debe,0);
+      const totalOP       = pd.op.reduce((s,r)=>s+r.debe,0);
+      const saldoFac      = totalFacHaber - totalNC - totalOP;
+
+      // Saldo REM = sum(haber min.egreso) - sum(debe min.ingreso)
+      // (ya los ingresé invirtiendo min.ingreso arriba)
+      const saldoRem = pd.rem.reduce((s,r)=>s+(r.haber-r.debe),0);
+
+      const saldoTotal=saldoFac+saldoRem;
+
+      // Última fecha de factura / remito
+      const lastFecFac=pd.fac.length?pd.fac[pd.fac.length-1].fecha:null;
+      const lastFecRem=pd.rem.length?pd.rem[pd.rem.length-1].fecha:null;
+
+      // Acuerdos
+      const acFac=getAcuerdo(prov,'FAC');
+      const acRem=getAcuerdo(prov,'REM');
+      const hasAcuerdo=acFac||acRem;
+      if(!hasAcuerdo&&saldoTotal>0) sinAcuerdo.push(prov);
+
+      // Vencimientos propuestos
+      const vencFac=acFac&&lastFecFac?calcVencimiento(lastFecFac,acFac):null;
+      const vencRem=acRem&&lastFecRem?calcVencimiento(lastFecRem,acRem):null;
+
+      resultado.push({
+        prov, saldoFac, saldoRem, saldoTotal,
+        lastFecFac, lastFecRem,
+        vencFac, vencRem,
+        acFac, acRem,
+        // Para edición en la tabla
+        editVencFac:vencFac, editVencRem:vencRem
+      });
+    });
+
+    // Ordenar: mayor saldo total primero
+    resultado.sort((a,b)=>b.saldoTotal-a.saldoTotal);
+    ST.provImport=resultado;
+
+    // Mostrar resumen de importación
+    const totalProv=resultado.length;
+    const totalDeuda=resultado.reduce((s,r)=>s+r.saldoTotal,0);
+    let summHtml=`<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-bottom:10px;">
+      <div><span style="color:var(--text2);font-size:12px;">Proveedores</span><div style="font-size:20px;font-weight:700;">${totalProv}</div></div>
+      <div><span style="color:var(--text2);font-size:12px;">Saldo total</span><div style="font-size:20px;font-weight:700;color:var(--red);">${fa(totalDeuda)}</div></div>
+      <div style="margin-left:auto"><button class="btn btn-primary" onclick="switchProvTabById('pst-venc')">Ver vencimientos propuestos →</button></div>
+    </div>`;
+    if(sinAcuerdo.length>0){
+      summHtml+=`<div class="prov-warn"><strong>⚠️ ${sinAcuerdo.length} proveedor${sinAcuerdo.length>1?'es':''} sin acuerdo de pago configurado:</strong>${sinAcuerdo.map(p=>`<div style="margin-top:2px;">• ${escapeHtml(p)} — <button class="btn btn-ghost btn-sm" style="padding:1px 8px;font-size:11px;" onclick="switchProvTabById('pst-acuerdos')">Configurar →</button></div>`).join('')}</div>`;
+    }
+    // Tabla resumen por proveedor
+    summHtml+=`<div style="overflow-x:auto;"><table class="prov-table">
+      <tr><th>Proveedor</th><th class="num">Saldo FAC</th><th class="num">Saldo REM</th><th class="num">Total</th><th>Vcto FAC</th><th>Vcto REM</th></tr>`;
+    resultado.forEach(r=>{
+      const sfCls=r.saldoFac>0?'monto-pos':'monto-zero';
+      const srCls=r.saldoRem>0?'monto-pos':'monto-zero';
+      const stCls=r.saldoTotal>0?'monto-pos':'monto-zero';
+      const vfHtml=r.vencFac?`<span style="font-size:11.5px;">${fd(r.vencFac)}</span>`:(r.saldoFac>0?`<span class="prov-tag-np">sin acuerdo</span>`:'—');
+      const vrHtml=r.vencRem?`<span style="font-size:11.5px;">${fd(r.vencRem)}</span>`:(r.saldoRem>0?`<span class="prov-tag-np">sin acuerdo</span>`:'—');
+      summHtml+=`<tr>
+        <td>${escapeHtml(r.prov)}</td>
+        <td class="num ${sfCls}">${r.saldoFac>0?fa(r.saldoFac):'—'}</td>
+        <td class="num ${srCls}">${r.saldoRem>0?fa(r.saldoRem):'—'}</td>
+        <td class="num ${stCls}" style="font-weight:600;">${r.saldoTotal>0?fa(r.saldoTotal):'—'}</td>
+        <td>${vfHtml}</td>
+        <td>${vrHtml}</td>
+      </tr>`;
+    });
+    summHtml+=`</table></div>`;
+    resEl.innerHTML=summHtml;
+    renderProvVencimientosPropuestos();
+
+  }catch(err){
+    resEl.innerHTML=`<div class="prov-warn"><strong>Error al leer el archivo:</strong>${escapeHtml(err.message)}</div>`;
+    console.error(err);
+  }
+  input.value='';
+}
+
+function switchProvTabById(id){
+  const btn=document.querySelector(`.prov-subtab[data-pst="${id}"]`);
+  if(btn)switchProvTab(btn);
+}
+
+// ── Render Vencimientos Propuestos ──
+function renderProvVencimientosPropuestos(){
+  const wrap=document.getElementById('prov-venc-wrap');
+  if(!wrap)return;
+  if(!ST.provImport||ST.provImport.length===0){
+    wrap.innerHTML='<div class="empty-state"><div class="ico">📥</div>Importá el mayor primero para ver los vencimientos propuestos.</div>';
+    return;
+  }
+
+  const sinVenc=ST.provImport.filter(r=>r.saldoTotal>0&&!r.editVencFac&&!r.editVencRem&&!getAcuerdo(r.prov,'FAC')&&!getAcuerdo(r.prov,'REM'));
+  let warnHtml='';
+  if(sinVenc.length>0){
+    warnHtml=`<div class="prov-warn"><strong>⚠️ Proveedores con saldo sin fecha de vencimiento calculable — configurá su acuerdo de pago:</strong>${sinVenc.map(r=>`<div style="margin-top:2px;">• ${escapeHtml(r.prov)} (${fa(r.saldoTotal)})</div>`).join('')}</div>`;
+  }
+
+  // Tabla editable
+  let tableHtml=`<div style="overflow-x:auto;"><table class="prov-table">
+    <tr>
+      <th>Proveedor</th>
+      <th class="num">Saldo FAC</th><th>Vcto FAC</th>
+      <th class="num">Saldo REM</th><th>Vcto REM</th>
+      <th class="num">Total</th>
+      <th></th>
+    </tr>`;
+
+  ST.provImport.forEach((r,idx)=>{
+    if(r.saldoFac<=0&&r.saldoRem<=0)return; // no mostrar saldo cero
+    const vfInput=r.editVencFac||'';
+    const vrInput=r.editVencRem||'';
+    tableHtml+=`<tr class="prov-propose-row">
+      <td style="font-weight:600;">${escapeHtml(r.prov)}</td>
+      <td class="num">${r.saldoFac>0?fa(r.saldoFac):'—'}</td>
+      <td>${r.saldoFac>0?`<input type="date" class="prov-input-edit" value="${vfInput}" onchange="ST.provImport[${idx}].editVencFac=this.value" style="width:130px;">`:'—'}</td>
+      <td class="num">${r.saldoRem>0?fa(r.saldoRem):'—'}</td>
+      <td>${r.saldoRem>0?`<input type="date" class="prov-input-edit" value="${vrInput}" onchange="ST.provImport[${idx}].editVencRem=this.value" style="width:130px;">`:'—'}</td>
+      <td class="num" style="font-weight:600;">${fa(r.saldoFac+r.saldoRem)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="cargarVencProv(${idx})" title="Cargar en vencimientos">+ Cargar</button></td>
+    </tr>`;
+  });
+  tableHtml+=`</table></div>`;
+
+  const totalConVenc=ST.provImport.filter(r=>(r.editVencFac||r.editVencRem)).length;
+  const btnGroup=`<div class="prov-venc-btn-group">
+    <button class="btn btn-primary" onclick="cargarTodosVencProv()">📥 Cargar todos a Vencimientos</button>
+    <span style="color:var(--text2);font-size:12.5px;align-self:center;">${totalConVenc} de ${ST.provImport.filter(r=>r.saldoTotal>0).length} con fecha asignada</span>
+  </div>`;
+
+  wrap.innerHTML=warnHtml+tableHtml+btnGroup;
+}
+
+async function cargarVencProv(idx){
+  const r=ST.provImport[idx];
+  let cargados=0;
+  if(r.saldoFac>0&&r.editVencFac){
+    await guardarVencProv(r.prov,'FAC',r.saldoFac,r.editVencFac);
+    cargados++;
+  }
+  if(r.saldoRem>0&&r.editVencRem){
+    await guardarVencProv(r.prov,'REM',r.saldoRem,r.editVencRem);
+    cargados++;
+  }
+  if(cargados===0){alert('Asigná al menos una fecha de vencimiento.');return;}
+  await load(); renderVenc();
+  renderProvVencimientosPropuestos();
+  alert(`✅ ${cargados} vencimiento${cargados>1?'s':''} de ${r.prov} cargado${cargados>1?'s':''}.`);
+}
+
+async function cargarTodosVencProv(){
+  let total=0;
+  for(const r of ST.provImport){
+    if(r.saldoFac>0&&r.editVencFac){ await guardarVencProv(r.prov,'FAC',r.saldoFac,r.editVencFac); total++; }
+    if(r.saldoRem>0&&r.editVencRem){ await guardarVencProv(r.prov,'REM',r.saldoRem,r.editVencRem); total++; }
+  }
+  if(total===0){alert('No hay vencimientos con fecha asignada para cargar.');return;}
+  await load(); renderVenc();
+  renderProvVencimientosPropuestos();
+  alert(`✅ ${total} vencimiento${total>1?'s':''} cargado${total>1?'s':''} correctamente.`);
+}
+
+async function guardarVencProv(prov, modalidad, monto, fecha){
+  if(!CURRENT_USER)return;
+  const concepto=`${prov} · ${modalidad==='FAC'?'Facturas':'Remitos'}`;
+  const {error}=await supa.from('pagos').insert({
+    user_id: CURRENT_USER.id,
+    concepto,
+    fecha,
+    rubro: 'PROVEEDORES',
+    monto: monto,
+    medio: 'CHEQUE',
+    origen: ST.origenes[0]||'',
+    estado: 'impago',
+    notas: `Importado del mayor · Saldo al ${today()}`
+  });
+  if(error)console.error('Error guardando venc proveedor:',error);
+}
 
 // Listen for auth changes (session refresh, sign out from another tab)
 supa.auth.onAuthStateChange(async (event, session) => {
