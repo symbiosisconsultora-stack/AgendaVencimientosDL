@@ -16,6 +16,20 @@
   --shadow:0 6px 28px rgba(0,0,0,0.5);
   --header-h:62px;--bottom-nav-h:64px;
 }
+:root[data-theme="light"]{
+  --bg:#f0f2f7;--surface:#ffffff;--surface2:#e8ecf4;--surface3:#dde2ee;
+  --border:#cdd4e4;--border2:#b0bcce;--accent:#3a6ef0;--accent2:#2254d0;
+  --accent-glow:rgba(58,110,240,0.12);--green:#1aaa62;--green-bg:rgba(26,170,98,0.1);
+  --red:#d93535;--red-bg:rgba(217,53,53,0.09);--yellow:#c8920a;--yellow-bg:rgba(200,146,10,0.1);
+  --text:#1a2035;--text2:#5a6885;--text3:#9aa5bc;--radius:9px;--radius-lg:14px;
+  --shadow:0 4px 20px rgba(0,0,0,0.12);
+  --header-h:62px;--bottom-nav-h:64px;
+}
+/* botón toggle tema */
+.theme-toggle-btn{background:none;border:1px solid var(--border);color:var(--text2);
+  border-radius:20px;padding:4px 11px;font-size:12px;cursor:pointer;
+  display:flex;align-items:center;gap:5px;transition:border-color .15s,color .15s;white-space:nowrap;}
+.theme-toggle-btn:hover{border-color:var(--accent);color:var(--accent);}
 *{box-sizing:border-box;margin:0;padding:0;}
 html{height:100%;}
 body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100%;font-size:13.5px;-webkit-tap-highlight-color:transparent;}
@@ -517,6 +531,23 @@ select option{background:var(--surface2);}
 .prov-warn strong{display:block;margin-bottom:4px;}
 .prov-propose-row{background:rgba(79,127,255,0.06);}
 .prov-propose-row td{border-bottom:1px solid rgba(79,127,255,0.12);}
+.prov-row-main{cursor:default;}
+.prov-row-expanded{background:rgba(79,127,255,0.1);}
+.prov-row-detail{background:var(--surface2);}
+.prov-row-detail td{border-bottom:1px solid var(--border);padding:5px 8px;}
+.prov-row-detail-footer td{background:transparent;border-bottom:2px solid rgba(79,127,255,0.2);}
+.prov-expand-btn{background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:2px 4px;border-radius:4px;transition:color .15s;}
+.prov-expand-btn:hover,.prov-expand-btn.open{color:var(--accent);}
+.prov-input-sm{padding:2px 6px !important;font-size:11.5px !important;width:120px !important;}
+.prov-table-detail th:first-child,.prov-table-detail td:first-child{padding:0 4px;width:28px;}
+/* Pivot rubro expandible */
+.tr-rubro-main td.td-rubro{user-select:none;}
+.tr-rubro-main:hover td.td-rubro{background:rgba(79,127,255,0.07);}
+.tr-rubro-expanded td{border-bottom:none;}
+.tr-concepto-detail{background:var(--surface2);}
+.tr-concepto-detail td{border-bottom:1px solid var(--border);padding:4px 8px;}
+.tr-concepto-detail:last-of-type td{border-bottom:2px solid var(--border2);}
+.pcell-detail{font-size:12px !important;padding:3px 7px !important;}
 .prov-venc-block{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;}
 .prov-venc-block-title{font-weight:700;font-size:13.5px;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
 .prov-acuerdo-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);flex-wrap:wrap;}
@@ -525,9 +556,19 @@ select option{background:var(--surface2);}
 .prov-acuerdo-desc{color:var(--text2);font-size:12px;flex:1;}
 .prov-acuerdo-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:2px 6px;border-radius:4px;}
 .prov-acuerdo-del:hover{color:var(--red);background:var(--red-bg);}
+.prov-acuerdo-edit{background:none;border:none;color:var(--text3);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;}
+.prov-acuerdo-edit:hover{color:var(--accent);background:rgba(var(--accent-rgb,99,102,241),0.08);}
+.prov-acuerdo-editing{background:var(--surface2);border-radius:8px;padding:8px 10px;margin-bottom:2px;border-bottom:none !important;gap:8px;}
 .prov-input-edit{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:5px;padding:4px 8px;font-size:12px;font-family:'DM Sans',sans-serif;width:100%;}
 .prov-venc-btn-group{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 </style>
+<!-- Aplica el tema guardado antes de pintar para evitar flash -->
+<script>
+  (function(){
+    const t=localStorage.getItem('dl-theme')||'dark';
+    document.documentElement.setAttribute('data-theme',t);
+  })();
+</script>
 </head>
 <body>
 
@@ -577,6 +618,7 @@ select option{background:var(--surface2);}
     <div class="nav-tab" data-page="page-prov" onclick="switchTab(this)">🏭 Proveedores</div>
     <div class="nav-tab" data-page="page-config" onclick="switchTab(this)">⚙️ Config</div>
   </nav>
+  <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Cambiar tema">☀️ Claro</button>
   <span class="user-chip" id="user-chip" style="display:none"></span>
   <button class="logout-btn" id="logout-btn" style="display:none" onclick="doLogout()">⏻ Salir</button>
 </header>
@@ -1108,7 +1150,8 @@ let ST={
   sortBy:'fecha',
   sortDir:'asc',
   acuerdos:[...DEFAULT_ACUERDOS],
-  provImport:null   // resultado de la última importación de mayor
+  provImport:null,   // resultado de la última importación de mayor
+  provExpanded:new Set() // índices de filas de proveedores expandidas
 };
 
 // pivot filter state
@@ -1190,6 +1233,22 @@ function fs(n){
 }
 function fd(d){if(!d)return '—';const[y,m,dd]=d.split('-');return `${dd}/${m}/${y}`;}
 function today(){return new Date().toISOString().split('T')[0];}
+
+// ── TEMA CLARO / OSCURO ──
+(function initTheme(){
+  const saved=localStorage.getItem('dl-theme')||'dark';
+  applyTheme(saved);
+})();
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  const btn=document.getElementById('theme-toggle-btn');
+  if(btn){btn.textContent=t==='light'?'🌙 Oscuro':'☀️ Claro';}
+  localStorage.setItem('dl-theme',t);
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')||'dark';
+  applyTheme(cur==='dark'?'light':'dark');
+}
 function daysLeft(f){
   if(!f)return null;
   const d=new Date(f+'T00:00:00'),t=new Date();
@@ -1762,12 +1821,19 @@ function renderPivot(pg){
   let bodyHtml='<tbody>';
   const colTotals={};keys.forEach(k=>{colTotals[k]=0;});
   let grandTotal=0;
+  const expandedRubros=PF[pg]._expandedRubros||(PF[pg]._expandedRubros=new Set());
 
   rubros.forEach(rb=>{
     let rowTotal=0;
     keys.forEach(k=>{rowTotal+=mat[rb][k].reduce((s,r)=>s+(Number(r.importe)||0),0);});
     grandTotal+=rowTotal;
-    bodyHtml+=`<tr><td class="td-rubro">${escapeHtml(rb)}</td>`;
+    const expanded=expandedRubros.has(rb);
+
+    // ── Fila de rubro ──
+    bodyHtml+=`<tr class="tr-rubro-main${expanded?' tr-rubro-expanded':''}">
+      <td class="td-rubro" style="cursor:pointer;" onclick="togglePivotRubro('${pg}','${escapeHtml(rb).replace(/'/g,"\\'")}')">
+        <span class="prov-expand-btn${expanded?' open':''}" style="margin-right:5px;font-size:10px;">${expanded?'▼':'▶'}</span>${escapeHtml(rb)}
+      </td>`;
     bodyHtml+=`<td class="td-subtotal">${rowTotal?fa(rowTotal):'<span class="cell-empty">—</span>'}</td>`;
     keys.forEach(k=>{
       const items=mat[rb][k];
@@ -1784,8 +1850,42 @@ function renderPivot(pg){
         bodyHtml+=`<td><span class="pcell no-val">—</span></td>`;
       }
     });
-    bodyHtml+=`<td class="td-total-col">${rowTotal?fs(rowTotal):'—'}</td>`;
-    bodyHtml+=`</tr>`;
+    bodyHtml+=`<td class="td-total-col">${rowTotal?fs(rowTotal):'—'}</td></tr>`;
+
+    // ── Filas de conceptos (detalle expandido) ──
+    if(expanded){
+      // Obtener conceptos únicos dentro del rubro
+      const conceptosMap={};
+      keys.forEach(k=>{
+        mat[rb][k].forEach(r=>{
+          const c=r.concepto||'Sin concepto';
+          if(!conceptosMap[c])conceptosMap[c]={};
+          if(!conceptosMap[c][k])conceptosMap[c][k]=[];
+          conceptosMap[c][k].push(r);
+        });
+      });
+      Object.keys(conceptosMap).sort().forEach(conc=>{
+        let concTotal=0;
+        keys.forEach(k=>{concTotal+=(conceptosMap[conc][k]||[]).reduce((s,r)=>s+(Number(r.importe)||0),0);});
+        bodyHtml+=`<tr class="tr-concepto-detail">
+          <td class="td-rubro" style="padding-left:28px;font-size:12px;color:var(--text2);font-weight:400;">${escapeHtml(conc)}</td>
+          <td class="td-subtotal" style="font-size:11.5px;">${concTotal?fa(concTotal):'<span class="cell-empty">—</span>'}</td>`;
+        keys.forEach(k=>{
+          const items=conceptosMap[conc][k]||[];
+          const sum=items.reduce((s,r)=>s+(Number(r.importe)||0),0);
+          const hasAmt=items.some(r=>r.importe!==''&&r.importe!=null);
+          const isOvKey=seg==='dia'&&k!=='sin-fecha'&&k<today()&&!isHist;
+          if(items.length>0){
+            const cls='pcell has-val pcell-detail'+(isOvKey?' overdue':'');
+            const display=hasAmt?fs(sum):`<span style="font-size:10.5px;color:var(--text2)">${items.length} op.</span>`;
+            bodyHtml+=`<td><span class="${cls}" onclick="showPopupConcepto('${pg}','${escapeHtml(rb).replace(/'/g,"\\'")}','${escapeHtml(conc).replace(/'/g,"\\'")}','${k}','${seg}')">${display}</span></td>`;
+          } else {
+            bodyHtml+=`<td><span class="pcell no-val" style="font-size:11px;">—</span></td>`;
+          }
+        });
+        bodyHtml+=`<td class="td-total-col" style="font-size:11.5px;">${concTotal?fs(concTotal):'—'}</td></tr>`;
+      });
+    }
   });
 
   // TOTAL row
@@ -1810,6 +1910,36 @@ function renderPivot(pg){
     .slice(0,3)
     .map(([f,v])=>`<div class="stat-card ${isHist?'green':'blue'}"><div class="stat-label">${escapeHtml(f)}</div><div class="stat-value" style="font-size:15px">${fa(v,'$0')}</div><div class="stat-sub">${recs.filter(r=>(r.medio||'Sin definir')===f).length} reg.</div></div>`).join('');
   document.getElementById(`sum-${pg}`).innerHTML=`<div class="stat-card ${clr}"><div class="stat-label">Total ${isHist?'Abonado':'Proyectado'}</div><div class="stat-value" style="font-size:16px">${fa(total,'$0')}</div><div class="stat-sub">${recs.length} registros · ${rubros.length} rubros · ${keys.length} períodos</div></div>${cards}`;
+}
+
+function togglePivotRubro(pg, rb){
+  const exp=PF[pg]._expandedRubros||(PF[pg]._expandedRubros=new Set());
+  if(exp.has(rb))exp.delete(rb); else exp.add(rb);
+  renderPivot(pg);
+}
+
+function showPopupConcepto(pg, rubro, concepto, key, seg){
+  const isHist=pg==='hist';
+  const getDF=r=>isHist?(r.fechaPago||r.fecha||''):(r.fecha||'');
+  const baseRecs=ST.records.filter(r=>r.estado===(isHist?'pagado':'impago'));
+  const recs=applyPF(baseRecs,pg).filter(r=>
+    (r.rubro||'Sin rubro')===rubro &&
+    (r.concepto||'Sin concepto')===concepto &&
+    dateKey(getDF(r),seg)===key
+  );
+  // Reutiliza el popup existente
+  document.getElementById('pop-title').textContent=`${concepto} — ${keyLabel(key,seg)}`;
+  const total=recs.reduce((s,r)=>s+(Number(r.importe)||0),0);
+  document.getElementById('pop-sub').textContent=`${recs.length} operación${recs.length!==1?'es':''} · Total: ${fa(total,'$0')}`;
+  const rows=recs.map(r=>`<tr style="border-bottom:1px solid var(--border);">
+    <td style="padding:8px 10px;font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;">${fd(r.fecha)}</td>
+    <td style="padding:8px 10px;font-size:13px;max-width:280px">${escapeHtml(r.concepto)}</td>
+    <td style="padding:8px 10px;text-align:right;font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;">${r.importe===''||r.importe==null?'<span style="color:var(--text3)">—</span>':fa(r.importe)}</td>
+    <td style="padding:8px 10px;">${r.medio?`<span class="pill ${medioPillCls(r.medio)}">${escapeHtml(r.medio)}</span>`:''}</td>
+    <td style="padding:8px 10px;text-align:center;"><button class="act-btn" onclick="closePopup();openModalEdit('${r.id}')" title="Editar">✎</button></td>
+  </tr>`).join('');
+  document.getElementById('pop-body').innerHTML=`<div style="overflow-x:auto;border:1px solid var(--border);border-radius:8px;"><table style="width:100%;border-collapse:collapse;"><tbody>${rows}</tbody></table></div>`;
+  document.getElementById('popup-overlay').classList.add('active');
 }
 
 function updatePivotFooter(pg,recs){
@@ -2405,6 +2535,9 @@ function renderAll() {
 //  INIT — check Supabase auth session
 // ══════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // Sincronizar botón de tema con el valor guardado
+  applyTheme(localStorage.getItem('dl-theme')||'dark');
+
   const { data: { session } } = await supa.auth.getSession();
   if (session && session.user) {
     CURRENT_USER = session.user;
@@ -2437,7 +2570,7 @@ function switchProvTab(el){
 }
 
 // ── Acuerdos CRUD ──
-function renderProvAcuerdos(){
+function renderProvAcuerdos(editIdx){
   const el=document.getElementById('prov-acuerdos-list');
   if(!el)return;
   if(ST.acuerdos.length===0){
@@ -2453,19 +2586,51 @@ function renderProvAcuerdos(){
   let html='';
   Object.keys(byProv).sort().forEach(prov=>{
     byProv[prov].forEach(a=>{
-      const modTag=a.modalidad==='FAC'?`<span class="prov-tag-fac">FAC</span>`:
-                   a.modalidad==='REM'?`<span class="prov-tag-rem">REM</span>`:
-                   `<span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(41,201,122,0.15);color:var(--green);">ÚNICO</span>`;
-      const viaj=a.viajante?'<span style="font-size:10px;color:var(--text3);margin-left:4px;">🤝 viajante</span>':'';
-      html+=`<div class="prov-acuerdo-row">
-        <div class="prov-acuerdo-prov">${escapeHtml(prov)}</div>
-        ${modTag}
-        <div class="prov-acuerdo-desc">${escapeHtml(a.label||'')} (${a.diasBase} días)${viaj}</div>
-        <button class="prov-acuerdo-del" onclick="deleteAcuerdo(${a._idx})" title="Eliminar">✕</button>
-      </div>`;
+      const i=a._idx;
+      if(editIdx===i){
+        // Fila en modo edición
+        html+=`<div class="prov-acuerdo-row prov-acuerdo-editing" id="edit-row-${i}">
+          <input id="ea-prov-${i}" value="${escapeHtml(a.proveedor)}" style="flex:1;min-width:120px;padding:3px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface2);color:var(--text1);">
+          <select id="ea-mod-${i}" style="padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface2);color:var(--text1);">
+            <option${a.modalidad==='FAC'?' selected':''}>FAC</option>
+            <option${a.modalidad==='REM'?' selected':''}>REM</option>
+            <option${a.modalidad==='UNICO'?' selected':''}>UNICO</option>
+          </select>
+          <input id="ea-dias-${i}" type="number" value="${a.diasBase}" min="0" style="width:60px;padding:3px 6px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface2);color:var(--text1);">
+          <input id="ea-label-${i}" value="${escapeHtml(a.label||'')}" placeholder="Descripción" style="flex:2;min-width:120px;padding:3px 7px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:var(--surface2);color:var(--text1);">
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text2);white-space:nowrap;cursor:pointer;">
+            <input id="ea-viaj-${i}" type="checkbox"${a.viajante?' checked':''}> viajante
+          </label>
+          <button class="btn btn-primary btn-sm" style="padding:3px 10px;font-size:11px;" onclick="saveAcuerdo(${i})">Guardar</button>
+          <button class="btn btn-ghost btn-sm" style="padding:3px 8px;font-size:11px;" onclick="renderProvAcuerdos()">Cancelar</button>
+        </div>`;
+      } else {
+        const modTag=a.modalidad==='FAC'?`<span class="prov-tag-fac">FAC</span>`:
+                     a.modalidad==='REM'?`<span class="prov-tag-rem">REM</span>`:
+                     `<span style="display:inline-block;padding:1px 7px;border-radius:20px;font-size:10.5px;font-weight:700;background:rgba(41,201,122,0.15);color:var(--green);">ÚNICO</span>`;
+        const viaj=a.viajante?'<span style="font-size:10px;color:var(--text3);margin-left:4px;">🤝 viajante</span>':'';
+        html+=`<div class="prov-acuerdo-row">
+          <div class="prov-acuerdo-prov">${escapeHtml(prov)}</div>
+          ${modTag}
+          <div class="prov-acuerdo-desc">${escapeHtml(a.label||'')} (${a.diasBase} días)${viaj}</div>
+          <button class="btn btn-ghost btn-sm prov-acuerdo-edit" onclick="renderProvAcuerdos(${i})" title="Editar">✏️</button>
+          <button class="prov-acuerdo-del" onclick="deleteAcuerdo(${i})" title="Eliminar">✕</button>
+        </div>`;
+      }
     });
   });
   el.innerHTML=html;
+}
+
+function saveAcuerdo(idx){
+  const prov=(document.getElementById(`ea-prov-${idx}`).value||'').trim().toUpperCase();
+  const mod=document.getElementById(`ea-mod-${idx}`).value;
+  const dias=parseInt(document.getElementById(`ea-dias-${idx}`).value)||0;
+  const label=(document.getElementById(`ea-label-${idx}`).value||'').trim();
+  const viajante=document.getElementById(`ea-viaj-${idx}`).checked;
+  if(!prov){alert('El nombre del proveedor no puede estar vacío.');return;}
+  ST.acuerdos[idx]={proveedor:prov, modalidad:mod, tipo:'dias', diasBase:dias, viajante, label:label||`A ${dias} días`};
+  renderProvAcuerdos();
 }
 
 function addAcuerdo(){
@@ -2491,8 +2656,10 @@ function deleteAcuerdo(idx){
 
 // ── Importación del Mayor ──
 function addDias(fechaStr, dias){
+  if(!fechaStr)return null;
   if(dias===0)return fechaStr; // en el momento
   const d=new Date(fechaStr+'T00:00:00');
+  if(isNaN(d.getTime()))return null;
   d.setDate(d.getDate()+dias);
   return d.toISOString().split('T')[0];
 }
@@ -2514,10 +2681,21 @@ function calcVencimiento(fechaComp, acuerdo){
   return addDias(fechaComp, acuerdo.diasBase);
 }
 
+function normProv(s){
+  return String(s).toUpperCase().trim()
+    .normalize('NFD').replace(/[̀-ͯ]/g,'') // quita tildes
+    .replace(/\s+/g,' ');
+}
 function getAcuerdo(proveedorNombre, modalidad){
-  const pn=proveedorNombre.toUpperCase();
-  // Buscar exacto
-  let a=ST.acuerdos.find(x=>x.proveedor.toUpperCase()===pn && (x.modalidad===modalidad||x.modalidad==='UNICO'));
+  const pn=normProv(proveedorNombre);
+  // Buscar exacto (sin tildes, sin espacios extra)
+  let a=ST.acuerdos.find(x=>normProv(x.proveedor)===pn && (x.modalidad===modalidad||x.modalidad==='UNICO'));
+  if(a)return a;
+  // Buscar por contención (nombre acuerdo está dentro del nombre del Excel o viceversa)
+  a=ST.acuerdos.find(x=>{
+    const xa=normProv(x.proveedor);
+    return (pn.includes(xa)||xa.includes(pn)) && (x.modalidad===modalidad||x.modalidad==='UNICO');
+  });
   return a||null;
 }
 
@@ -2531,11 +2709,13 @@ async function importarMayor(input){
     const data=await file.arrayBuffer();
     const wb=XLSX.read(data,{type:'array',cellDates:true});
     const ws=wb.Sheets[wb.SheetNames[0]];
-    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:false,dateNF:'yyyy-mm-dd'});
+    // raw:true para recibir Date objects en celdas de fecha; los strings/números quedan sin convertir
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
 
     // Detectar header
     const HDR=rows[0]||[];
-    const iF=HDR.findIndex(h=>String(h).toLowerCase().includes('fecha')&&String(h).toLowerCase().includes('imputa'));
+    // Fecha: preferimos la columna "Fecha" pura (col 0) que siempre está poblada
+    const iF=HDR.findIndex(h=>{const s=String(h).toLowerCase();return s==='fecha'||s.startsWith('fecha')&&!s.includes('imputa');});
     const iP=HDR.findIndex(h=>String(h).toLowerCase().includes('nombre'));
     const iC=HDR.findIndex(h=>String(h).toLowerCase().includes('comprob'));
     const iN=HDR.findIndex(h=>String(h).toLowerCase().includes('numera'));
@@ -2543,7 +2723,7 @@ async function importarMayor(input){
     const iH=HDR.findIndex(h=>String(h).toLowerCase().includes('haber'));
 
     // Fallback por posición (Fecha, Imputacion, Empresa, Sucursal, Código, Nombre, Comprobante, Numeración, Moneda, Cotización, Debe, Haber, Saldo)
-    const colFecha  = iF>=0?iF:1;
+    const colFecha  = iF>=0?iF:0;  // col 0 = Fecha, siempre poblada
     const colNombre = iP>=0?iP:5;
     const colComp   = iC>=0?iC:6;
     const colNum    = iN>=0?iN:7;
@@ -2556,26 +2736,28 @@ async function importarMayor(input){
 
     for(let i=1;i<rows.length;i++){
       const row=rows[i];
-      const nombre=(row[colNombre]||'').trim();
+      const nombre=String(row[colNombre]||'').trim();
       if(!nombre||nombre==='TODOS LOS PROVEEDORES'||nombre==='MOVIMIENTOS S/CPBTE.FISCAL')continue;
-      const comp=(row[colComp]||'').trim().toUpperCase();
-      const num =(row[colNum] ||'').trim();
-      const debe=parseFloat(String(row[colDebe]||'0').replace(',','.').replace(/[^0-9.-]/g,''))||0;
-      const haber=parseFloat(String(row[colHaber]||'0').replace(',','.').replace(/[^0-9.-]/g,''))||0;
-      // Fecha: puede venir como string o Date
-      let fecha=row[colFecha]||'';
-      if(fecha instanceof Date){
-        fecha=fecha.toISOString().split('T')[0];
-      } else {
-        // Formato dd/mm/yyyy o yyyy-mm-dd
-        fecha=String(fecha).trim();
-        if(/^\d{2}\/\d{2}\/\d{4}$/.test(fecha)){
-          const[dd,mm,yyyy]=fecha.split('/');
-          fecha=`${yyyy}-${mm}-${dd}`;
-        } else if(/^\d{4}-\d{2}-\d{2}/.test(fecha)){
-          fecha=fecha.substring(0,10);
-        }
+      const comp=String(row[colComp]||'').trim().toUpperCase();
+      const num =String(row[colNum] ||'').trim();
+      const debe=typeof row[colDebe]==='number'?row[colDebe]:parseFloat(String(row[colDebe]||'0').replace(',','.').replace(/[^0-9.-]/g,''))||0;
+      const haber=typeof row[colHaber]==='number'?row[colHaber]:parseFloat(String(row[colHaber]||'0').replace(',','.').replace(/[^0-9.-]/g,''))||0;
+      // Fecha: con raw:true y cellDates:true viene como Date object; fallback a string
+      let fecha='';
+      const rawFecha=row[colFecha];
+      if(rawFecha instanceof Date){
+        if(!isNaN(rawFecha.getTime()))fecha=rawFecha.toISOString().split('T')[0];
+      } else if(typeof rawFecha==='number'&&rawFecha>0){
+        // Número serial de Excel → convertir manualmente
+        const d=XLSX.SSF.parse_date_code(rawFecha);
+        if(d)fecha=`${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`;
+      } else if(rawFecha){
+        const s=String(rawFecha).trim();
+        if(/^\d{2}\/\d{2}\/\d{4}$/.test(s)){const[dd,mm,yyyy]=s.split('/');fecha=`${yyyy}-${mm}-${dd}`;}
+        else if(/^\d{4}-\d{2}-\d{2}/.test(s))fecha=s.substring(0,10);
+        else if(/^\d{2}-\d{2}-\d{4}$/.test(s)){const[dd,mm,yyyy]=s.split('-');fecha=`${yyyy}-${mm}-${dd}`;}
       }
+      if(!fecha)continue; // fila sin fecha válida (ej. SALDO INICIAL)
       const pd=ensureProv(nombre);
       if(comp==='FACTURA')          pd.fac.push({fecha,num,debe,haber});
       else if(comp==='MINUTA EGRESO') pd.rem.push({fecha,num,debe,haber});
@@ -2591,15 +2773,21 @@ async function importarMayor(input){
 
     provNames.forEach(prov=>{
       const pd=provData[prov];
-      // Saldo FAC = sum(haber facturas) - sum(debe NC) - sum(debe OP)
-      const totalFacHaber = pd.fac.reduce((s,r)=>s+r.haber,0);
-      const totalNC       = pd.nc.reduce((s,r)=>s+r.debe,0);
-      const totalOP       = pd.op.reduce((s,r)=>s+r.debe,0);
-      const saldoFac      = totalFacHaber - totalNC - totalOP;
 
-      // Saldo REM = sum(haber min.egreso) - sum(debe min.ingreso)
-      // (ya los ingresé invirtiendo min.ingreso arriba)
-      const saldoRem = pd.rem.reduce((s,r)=>s+(r.haber-r.debe),0);
+      // Saldo REM bruto = sum(haber min.egreso) - sum(debe min.ingreso)
+      const totalRemBruto = pd.rem.reduce((s,r)=>s+(r.haber-r.debe),0);
+
+      // Saldo FAC bruto = sum(haber facturas) - sum(debe NC)
+      const totalFacBruto = pd.fac.reduce((s,r)=>s+r.haber,0)
+                          - pd.nc.reduce((s,r)=>s+r.debe,0);
+
+      // OP: se aplican primero contra FAC; el remanente contra REM
+      const totalOP = pd.op.reduce((s,r)=>s+r.debe,0);
+      const opContraFac = Math.min(totalOP, Math.max(0, totalFacBruto));
+      const opContraRem = Math.max(0, totalOP - opContraFac);
+
+      const saldoFac = totalFacBruto - opContraFac;
+      const saldoRem = totalRemBruto - opContraRem;
 
       const saldoTotal=saldoFac+saldoRem;
 
@@ -2622,7 +2810,9 @@ async function importarMayor(input){
         lastFecFac, lastFecRem,
         vencFac, vencRem,
         acFac, acRem,
-        // Para edición en la tabla
+        // Arrays completos de comprobantes para el detalle expandible
+        fac: pd.fac, rem: pd.rem,
+        // Para edición en la tabla (nivel proveedor)
         editVencFac:vencFac, editVencRem:vencRem
       });
     });
@@ -2677,6 +2867,12 @@ function switchProvTabById(id){
 }
 
 // ── Render Vencimientos Propuestos ──
+function toggleProvDetalle(idx){
+  if(ST.provExpanded.has(idx))ST.provExpanded.delete(idx);
+  else ST.provExpanded.add(idx);
+  renderProvVencimientosPropuestos();
+}
+
 function renderProvVencimientosPropuestos(){
   const wrap=document.getElementById('prov-venc-wrap');
   if(!wrap)return;
@@ -2691,9 +2887,19 @@ function renderProvVencimientosPropuestos(){
     warnHtml=`<div class="prov-warn"><strong>⚠️ Proveedores con saldo sin fecha de vencimiento calculable — configurá su acuerdo de pago:</strong>${sinVenc.map(r=>`<div style="margin-top:2px;">• ${escapeHtml(r.prov)} (${fa(r.saldoTotal)})</div>`).join('')}</div>`;
   }
 
-  // Tabla editable
-  let tableHtml=`<div style="overflow-x:auto;"><table class="prov-table">
+  let tableHtml=`<div style="overflow-x:auto;"><table class="prov-table prov-table-detail">
+    <colgroup>
+      <col style="width:28px"><!-- expandir -->
+      <col><!-- proveedor/comp -->
+      <col style="width:130px"><!-- saldo fac -->
+      <col style="width:140px"><!-- vcto fac -->
+      <col style="width:130px"><!-- saldo rem -->
+      <col style="width:140px"><!-- vcto rem -->
+      <col style="width:110px"><!-- total -->
+      <col style="width:80px"><!-- acción -->
+    </colgroup>
     <tr>
+      <th></th>
       <th>Proveedor</th>
       <th class="num">Saldo FAC</th><th>Vcto FAC</th>
       <th class="num">Saldo REM</th><th>Vcto REM</th>
@@ -2702,18 +2908,93 @@ function renderProvVencimientosPropuestos(){
     </tr>`;
 
   ST.provImport.forEach((r,idx)=>{
-    if(r.saldoFac<=0&&r.saldoRem<=0)return; // no mostrar saldo cero
+    if(r.saldoFac<=0&&r.saldoRem<=0)return;
+    const expanded=ST.provExpanded.has(idx);
     const vfInput=r.editVencFac||'';
     const vrInput=r.editVencRem||'';
-    tableHtml+=`<tr class="prov-propose-row">
+    const hasDetFac=r.acFac&&r.fac&&r.fac.length>0;
+    const hasDetRem=(r.acRem||r.acFac)&&r.rem&&r.rem.length>0;
+    const hasDetalle=hasDetFac||hasDetRem;
+
+    // ── Fila principal del proveedor ──
+    tableHtml+=`<tr class="prov-propose-row prov-row-main${expanded?' prov-row-expanded':''}">
+      <td style="text-align:center;padding:0 4px;">
+        ${hasDetalle?`<button class="prov-expand-btn${expanded?' open':''}" onclick="toggleProvDetalle(${idx})" title="${expanded?'Ocultar':'Ver comprobantes'}">${expanded?'▼':'▶'}</button>`:''}
+      </td>
       <td style="font-weight:600;">${escapeHtml(r.prov)}</td>
       <td class="num">${r.saldoFac>0?fa(r.saldoFac):'—'}</td>
-      <td>${r.saldoFac>0?`<input type="date" class="prov-input-edit" value="${vfInput}" onchange="ST.provImport[${idx}].editVencFac=this.value" style="width:130px;">`:'—'}</td>
+      <td>${r.saldoFac>0?`<input type="date" class="prov-input-edit" value="${vfInput}"
+            onchange="provSetVenc(${idx},'fac',this.value)"
+            title="Fecha general FAC — aplica a todo el saldo">`:'—'}</td>
       <td class="num">${r.saldoRem>0?fa(r.saldoRem):'—'}</td>
-      <td>${r.saldoRem>0?`<input type="date" class="prov-input-edit" value="${vrInput}" onchange="ST.provImport[${idx}].editVencRem=this.value" style="width:130px;">`:'—'}</td>
+      <td>${r.saldoRem>0?`<input type="date" class="prov-input-edit" value="${vrInput}"
+            onchange="provSetVenc(${idx},'rem',this.value)"
+            title="Fecha general REM — aplica a todo el saldo">`:'—'}</td>
       <td class="num" style="font-weight:600;">${fa(r.saldoFac+r.saldoRem)}</td>
-      <td><button class="btn btn-ghost btn-sm" onclick="cargarVencProv(${idx})" title="Cargar en vencimientos">+ Cargar</button></td>
+      <td><button class="btn btn-ghost btn-sm" onclick="cargarVencProv(${idx})">+ Cargar</button></td>
     </tr>`;
+
+    // ── Filas de detalle (comprobantes individuales) ──
+    if(expanded){
+      // FAC
+      if(r.fac&&r.fac.length>0){
+        r.fac.forEach((cp,ci)=>{
+          if(cp.haber<=0)return; // solo los que tienen deuda
+          const cpVenc=cp.editVenc||calcVencimiento(cp.fecha,r.acFac)||'';
+          tableHtml+=`<tr class="prov-row-detail">
+            <td></td>
+            <td style="padding-left:28px;font-size:12px;">
+              <span class="prov-tag-fac" style="font-size:10px;">FAC</span>
+              <span style="color:var(--text2);margin-left:6px;">${escapeHtml(cp.num||'S/N')}</span>
+              <span style="color:var(--text3);font-size:11px;margin-left:6px;">${fd(cp.fecha)}</span>
+            </td>
+            <td class="num" style="font-size:12px;">${fa(cp.haber)}</td>
+            <td><input type="date" class="prov-input-edit prov-input-sm" value="${cpVenc}"
+                  onchange="provSetCpVenc(${idx},'fac',${ci},this.value)"
+                  title="Fecha de vencimiento de este comprobante"></td>
+            <td colspan="2"></td>
+            <td></td>
+            <td><button class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:2px 7px;"
+                  onclick="cargarVencCp(${idx},'fac',${ci})">↑ Cargar</button></td>
+          </tr>`;
+        });
+      }
+      // REM
+      if(r.rem&&r.rem.length>0){
+        // Agrupar remitos: solo los que tienen saldo neto positivo
+        r.rem.forEach((cp,ci)=>{
+          const neto=cp.haber-cp.debe;
+          if(neto<=0)return;
+          const acRem=r.acRem||r.acFac; // fallback al acuerdo FAC si no hay REM
+          const cpVenc=cp.editVenc||calcVencimiento(cp.fecha,acRem)||'';
+          tableHtml+=`<tr class="prov-row-detail">
+            <td></td>
+            <td style="padding-left:28px;font-size:12px;">
+              <span class="prov-tag-rem" style="font-size:10px;">REM</span>
+              <span style="color:var(--text2);margin-left:6px;">${escapeHtml(cp.num||'S/N')}</span>
+              <span style="color:var(--text3);font-size:11px;margin-left:6px;">${fd(cp.fecha)}</span>
+            </td>
+            <td></td><td></td>
+            <td class="num" style="font-size:12px;">${fa(neto)}</td>
+            <td><input type="date" class="prov-input-edit prov-input-sm" value="${cpVenc}"
+                  onchange="provSetCpVenc(${idx},'rem',${ci},this.value)"
+                  title="Fecha de vencimiento de este remito"></td>
+            <td></td>
+            <td><button class="btn btn-ghost btn-sm" style="font-size:10.5px;padding:2px 7px;"
+                  onclick="cargarVencCp(${idx},'rem',${ci})">↑ Cargar</button></td>
+          </tr>`;
+        });
+      }
+      // Botón cargar todos los comprobantes de este proveedor
+      tableHtml+=`<tr class="prov-row-detail prov-row-detail-footer">
+        <td></td>
+        <td colspan="7" style="padding:6px 0 6px 28px;">
+          <button class="btn btn-primary btn-sm" style="font-size:11.5px;"
+            onclick="cargarTodosCompsProv(${idx})">📥 Cargar todos los comprobantes de ${escapeHtml(r.prov)}</button>
+          <span style="color:var(--text3);font-size:11px;margin-left:10px;">Carga un vencimiento por comprobante en vez del saldo total</span>
+        </td>
+      </tr>`;
+    }
   });
   tableHtml+=`</table></div>`;
 
@@ -2724,6 +3005,25 @@ function renderProvVencimientosPropuestos(){
   </div>`;
 
   wrap.innerHTML=warnHtml+tableHtml+btnGroup;
+}
+
+// Setea la fecha general del proveedor Y actualiza los comprobantes sin fecha manual
+function provSetVenc(idx, tipo, val){
+  const r=ST.provImport[idx];
+  if(tipo==='fac') r.editVencFac=val;
+  else             r.editVencRem=val;
+  // Propagar a los comprobantes que no tienen fecha manual propia
+  const arr=tipo==='fac'?r.fac:r.rem;
+  if(arr)arr.forEach(cp=>{ if(!cp._manualVenc) cp.editVenc=val; });
+  renderProvVencimientosPropuestos();
+}
+
+// Setea la fecha de un comprobante individual (marcado como manual)
+function provSetCpVenc(idx, tipo, ci, val){
+  const r=ST.provImport[idx];
+  const arr=tipo==='fac'?r.fac:r.rem;
+  if(arr&&arr[ci]){ arr[ci].editVenc=val; arr[ci]._manualVenc=true; }
+  // No re-renderizar completo para no perder el foco; el input ya tiene el valor
 }
 
 async function cargarVencProv(idx){
@@ -2741,6 +3041,68 @@ async function cargarVencProv(idx){
   await load(); renderVenc();
   renderProvVencimientosPropuestos();
   alert(`✅ ${cargados} vencimiento${cargados>1?'s':''} de ${r.prov} cargado${cargados>1?'s':''}.`);
+}
+
+// Carga un comprobante individual
+async function cargarVencCp(idx, tipo, ci){
+  const r=ST.provImport[idx];
+  const arr=tipo==='fac'?r.fac:r.rem;
+  if(!arr||!arr[ci])return;
+  const cp=arr[ci];
+  const fecha=cp.editVenc||calcVencimiento(cp.fecha,tipo==='fac'?r.acFac:(r.acRem||r.acFac));
+  if(!fecha){alert('Este comprobante no tiene fecha de vencimiento asignada.');return;}
+  const monto=tipo==='fac'?cp.haber:(cp.haber-cp.debe);
+  if(monto<=0){alert('Este comprobante no tiene saldo positivo.');return;}
+  const nro=cp.num?` Nº${cp.num}`:'';
+  const concepto=`${r.prov} · ${tipo==='fac'?'FAC':'REM'}${nro}`;
+  if(!CURRENT_USER){alert('Iniciá sesión primero.');return;}
+  const{error}=await supa.from('pagos').insert({
+    user_id:CURRENT_USER.id,concepto,fecha,rubro:'PROVEEDORES',
+    monto,medio:'CHEQUE',origen:ST.origenes[0]||'',estado:'impago',
+    notas:`Importado del mayor · ${tipo==='fac'?'FAC':'REM'} ${nro} · ${today()}`
+  });
+  if(error){alert('Error al guardar: '+error.message);return;}
+  cp._cargado=true;
+  await load(); renderVenc();
+  renderProvVencimientosPropuestos();
+}
+
+// Carga todos los comprobantes individuales de un proveedor
+async function cargarTodosCompsProv(idx){
+  const r=ST.provImport[idx];
+  let total=0;
+  // FAC
+  if(r.fac)for(const cp of r.fac){
+    if(cp.haber<=0||cp._cargado)continue;
+    const fecha=cp.editVenc||calcVencimiento(cp.fecha,r.acFac);
+    if(!fecha)continue;
+    const nro=cp.num?` Nº${cp.num}`:'';
+    await supa.from('pagos').insert({
+      user_id:CURRENT_USER.id,concepto:`${r.prov} · FAC${nro}`,fecha,
+      rubro:'PROVEEDORES',monto:cp.haber,medio:'CHEQUE',origen:ST.origenes[0]||'',
+      estado:'impago',notas:`Importado del mayor · FAC${nro} · ${today()}`
+    });
+    cp._cargado=true; total++;
+  }
+  // REM
+  if(r.rem)for(const cp of r.rem){
+    const neto=cp.haber-cp.debe;
+    if(neto<=0||cp._cargado)continue;
+    const acRem=r.acRem||r.acFac;
+    const fecha=cp.editVenc||calcVencimiento(cp.fecha,acRem);
+    if(!fecha)continue;
+    const nro=cp.num?` Nº${cp.num}`:'';
+    await supa.from('pagos').insert({
+      user_id:CURRENT_USER.id,concepto:`${r.prov} · REM${nro}`,fecha,
+      rubro:'PROVEEDORES',monto:neto,medio:'CHEQUE',origen:ST.origenes[0]||'',
+      estado:'impago',notas:`Importado del mayor · REM${nro} · ${today()}`
+    });
+    cp._cargado=true; total++;
+  }
+  if(total===0){alert('No hay comprobantes con fecha calculable para cargar.');return;}
+  await load(); renderVenc();
+  renderProvVencimientosPropuestos();
+  alert(`✅ ${total} comprobante${total>1?'s':''} de ${r.prov} cargado${total>1?'s':''}.`);
 }
 
 async function cargarTodosVencProv(){
